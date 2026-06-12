@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/docente")
@@ -33,18 +34,24 @@ public class DocenteController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
-        docenteRepo.findByUsuarioCorreo(principal.getName())
-                .ifPresent(d -> model.addAttribute("docente", d));
-        model.addAttribute("totalEstudiantes", estudianteRepo.count());
-        model.addAttribute("facultades", facultadRepo.findAll());
-        model.addAttribute("pageTitle", "Panel Docente");
+        try {
+            docenteRepo.findByUsuarioCorreo(principal.getName())
+                    .ifPresent(d -> model.addAttribute("docente", d));
+            model.addAttribute("totalEstudiantes", estudianteRepo.count());
+            model.addAttribute("facultades", facultadRepo.findAll());
+        } catch (Exception e) {
+            model.addAttribute("totalEstudiantes", 0);
+        }
         return "docente/dashboard";
     }
 
     @GetMapping("/estudiantes")
     public String estudiantes(Model model) {
-        model.addAttribute("estudiantes", estudianteRepo.findAll());
-        model.addAttribute("pageTitle", "Alumnos");
+        try {
+            model.addAttribute("estudiantes", estudianteRepo.findAll());
+        } catch (Exception e) {
+            model.addAttribute("estudiantes", List.of());
+        }
         return "docente/estudiantes";
     }
 
@@ -52,27 +59,35 @@ public class DocenteController {
     public String buscar(@RequestParam(required = false) String cedula,
                          @RequestParam(required = false) Long facultadId,
                          Model model) {
-        if (cedula != null && !cedula.isBlank()) {
-            estudianteRepo.findByUsuarioDocumento(cedula)
-                    .ifPresent(e -> model.addAttribute("estudiante", e));
-            model.addAttribute("cedula", cedula);
+        try {
+            if (cedula != null && !cedula.isBlank()) {
+                estudianteRepo.findByUsuarioDocumento(cedula)
+                        .ifPresent(e -> model.addAttribute("estudiante", e));
+                model.addAttribute("cedula", cedula);
+            }
+            if (facultadId != null) {
+                model.addAttribute("estudiantesFacultad",
+                        estudianteRepo.findAll().stream()
+                                .filter(e -> e.getPrograma() != null
+                                        && e.getPrograma().getFacultad() != null
+                                        && e.getPrograma().getFacultad().getId().equals(facultadId))
+                                .toList());
+                model.addAttribute("facultadSeleccionada", facultadId);
+            }
+            model.addAttribute("facultades", facultadRepo.findAll());
+        } catch (Exception e) {
+            model.addAttribute("facultades", List.of());
         }
-        if (facultadId != null) {
-            model.addAttribute("estudiantesFacultad",
-                    estudianteRepo.findAll().stream()
-                            .filter(e -> e.getPrograma() != null
-                                    && e.getPrograma().getFacultad() != null
-                                    && e.getPrograma().getFacultad().getId().equals(facultadId))
-                            .toList());
-            model.addAttribute("facultadSeleccionada", facultadId);
-        }
-        model.addAttribute("facultades", facultadRepo.findAll());
         return "docente/buscar";
     }
 
     @GetMapping("/informe-general")
     public String informeGeneral(Model model) {
-        model.addAttribute("estudiantes", estudianteRepo.findAll());
+        try {
+            model.addAttribute("estudiantes", estudianteRepo.findAll());
+        } catch (Exception e) {
+            model.addAttribute("estudiantes", List.of());
+        }
         return "docente/informe-general";
     }
 
@@ -80,8 +95,7 @@ public class DocenteController {
     public ResponseEntity<byte[]> exportarInformeGeneral() throws Exception {
         byte[] data = excelService.generarInformeGeneral(estudianteRepo.findAll());
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=informe_general_docente.xlsx")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=informe_docente.xlsx")
                 .contentType(MediaType.parseMediaType(
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(data);
@@ -89,7 +103,11 @@ public class DocenteController {
 
     @GetMapping("/beneficios")
     public String beneficios(Model model) {
-        model.addAttribute("beneficiarios", resultadoRepo.findBeneficiarios());
+        try {
+            model.addAttribute("beneficiarios", resultadoRepo.findBeneficiarios());
+        } catch (Exception e) {
+            model.addAttribute("beneficiarios", List.of());
+        }
         return "docente/beneficios";
     }
 
@@ -97,8 +115,7 @@ public class DocenteController {
     public ResponseEntity<byte[]> exportarBeneficios() throws Exception {
         byte[] data = excelService.generarInformeDetallado(resultadoRepo.findBeneficiarios());
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=beneficios_docente.xlsx")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=beneficios_docente.xlsx")
                 .contentType(MediaType.parseMediaType(
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(data);

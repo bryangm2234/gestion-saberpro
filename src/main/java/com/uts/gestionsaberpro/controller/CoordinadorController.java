@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 
 @Controller
 @RequestMapping("/coordinador")
@@ -42,31 +43,42 @@ public class CoordinadorController {
                                   ExcelExportService excelService,
                                   PagoSaberProRepository pagoRepo,
                                   BeneficioService beneficioService) {
-        this.coordinadorRepo = coordinadorRepo;
-        this.estudianteRepo  = estudianteRepo;
-        this.resultadoRepo   = resultadoRepo;
-        this.programaRepo    = programaRepo;
-        this.roleRepo        = roleRepo;
-        this.usuarioRepo     = usuarioRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.excelService    = excelService;
-        this.pagoRepo        = pagoRepo;
+        this.coordinadorRepo  = coordinadorRepo;
+        this.estudianteRepo   = estudianteRepo;
+        this.resultadoRepo    = resultadoRepo;
+        this.programaRepo     = programaRepo;
+        this.roleRepo         = roleRepo;
+        this.usuarioRepo      = usuarioRepo;
+        this.passwordEncoder  = passwordEncoder;
+        this.excelService     = excelService;
+        this.pagoRepo         = pagoRepo;
         this.beneficioService = beneficioService;
     }
 
     // ── Dashboard ────────────────────────────────────────────────
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
-        long total         = estudianteRepo.count();
-        long conResultados = estudianteRepo.findAll().stream()
-                .filter(e -> !e.getResultados().isEmpty()).count();
-        coordinadorRepo.findByUsuarioCorreo(principal.getName())
-                .ifPresent(c -> model.addAttribute("coordinador", c));
-        model.addAttribute("totalEstudiantes", total);
-        model.addAttribute("conResultados",    conResultados);
-        model.addAttribute("sinResultados",    total - conResultados);
-        model.addAttribute("beneficiarios",    resultadoRepo.findBeneficiarios().size());
-        model.addAttribute("pagosPendientes",  pagoRepo.findByEstado(PagoSaberPro.EstadoPago.PENDIENTE).size());
+        try {
+            long total = estudianteRepo.count();
+            long conResultados = resultadoRepo.count();
+            long beneficiarios = resultadoRepo.findBeneficiarios().size();
+            long pagosPendientes = pagoRepo.findByEstado(PagoSaberPro.EstadoPago.PENDIENTE).size();
+
+            coordinadorRepo.findByUsuarioCorreo(principal.getName())
+                    .ifPresent(c -> model.addAttribute("coordinador", c));
+
+            model.addAttribute("totalEstudiantes", total);
+            model.addAttribute("conResultados",    conResultados);
+            model.addAttribute("sinResultados",    Math.max(0, total - conResultados));
+            model.addAttribute("beneficiarios",    beneficiarios);
+            model.addAttribute("pagosPendientes",  pagosPendientes);
+        } catch (Exception e) {
+            model.addAttribute("totalEstudiantes", 0);
+            model.addAttribute("conResultados", 0);
+            model.addAttribute("sinResultados", 0);
+            model.addAttribute("beneficiarios", 0);
+            model.addAttribute("pagosPendientes", 0);
+        }
         model.addAttribute("pageTitle", "Panel Coordinador");
         return "coordinator/dashboard";
     }
@@ -76,7 +88,6 @@ public class CoordinadorController {
     public String estudiantes(Model model) {
         model.addAttribute("estudiantes", estudianteRepo.findAll());
         model.addAttribute("programas",   programaRepo.findAll());
-        model.addAttribute("pageTitle",   "Gestión de Alumnos");
         return "coordinator/estudiantes";
     }
 
@@ -94,23 +105,23 @@ public class CoordinadorController {
             @RequestParam Long programaId) {
         Role roleEst = roleRepo.findByName(Role.RoleName.ROLE_ESTUDIANTE).orElseThrow();
         Usuario u = new Usuario();
-        u.setDocumento(documento); u.setTipoDocumento(Usuario.TipoDocumento.CC);
-        u.setPrimerNombre(primerNombre); u.setSegundoNombre(segundoNombre);
-        u.setPrimerApellido(primerApellido); u.setSegundoApellido(segundoApellido);
-        u.setCorreo(correo); u.setTelefono(telefono);
+        u.setDocumento(documento);
+        u.setTipoDocumento(Usuario.TipoDocumento.CC);
+        u.setPrimerNombre(primerNombre);
+        u.setSegundoNombre(segundoNombre);
+        u.setPrimerApellido(primerApellido);
+        u.setSegundoApellido(segundoApellido);
+        u.setCorreo(correo);
+        u.setTelefono(telefono);
         u.setPassword(passwordEncoder.encode(documento));
         u.setRoles(new HashSet<>() {{ add(roleEst); }});
         u = usuarioRepo.save(u);
         Estudiante est = new Estudiante();
-        est.setUsuario(u); est.setSemestre(semestre); est.setNumeroRegistro(numeroRegistro);
+        est.setUsuario(u);
+        est.setSemestre(semestre);
+        est.setNumeroRegistro(numeroRegistro);
         programaRepo.findById(programaId).ifPresent(est::setPrograma);
         estudianteRepo.save(est);
-        return "redirect:/coordinador/estudiantes";
-    }
-
-    @GetMapping("/estudiantes/desactivar/{id}")
-    public String desactivarEstudiante(@PathVariable Long id) {
-        estudianteRepo.findById(id).ifPresent(e -> { e.setActivo(false); estudianteRepo.save(e); });
         return "redirect:/coordinador/estudiantes";
     }
 
@@ -120,11 +131,16 @@ public class CoordinadorController {
         return "redirect:/coordinador/estudiantes";
     }
 
-    // ── Calificar Estudiante ──────────────────────────────────────
+    @GetMapping("/estudiantes/desactivar/{id}")
+    public String desactivarEstudiante(@PathVariable Long id) {
+        estudianteRepo.findById(id).ifPresent(e -> { e.setActivo(false); estudianteRepo.save(e); });
+        return "redirect:/coordinador/estudiantes";
+    }
+
+    // ── Calificar ─────────────────────────────────────────────────
     @GetMapping("/estudiantes/calificar/{id}")
     public String formCalificar(@PathVariable Long id, Model model) {
         estudianteRepo.findById(id).ifPresent(e -> model.addAttribute("estudiante", e));
-        model.addAttribute("pageTitle", "Calificar Estudiante");
         return "coordinator/calificar";
     }
 
@@ -161,21 +177,18 @@ public class CoordinadorController {
         return "redirect:/coordinador/estudiantes";
     }
 
-    // ── Aprobar Pago Saber Pro ───────────────────────────────────
+    // ── Pagos ─────────────────────────────────────────────────────
     @GetMapping("/pagos")
     public String pagos(Model model) {
-        model.addAttribute("pagos", pagoRepo.findAll());
+        model.addAttribute("pagos",      pagoRepo.findAll());
         model.addAttribute("pendientes", pagoRepo.findByEstado(PagoSaberPro.EstadoPago.PENDIENTE));
-        model.addAttribute("pageTitle", "Gestión de Pagos Saber Pro");
         return "coordinator/pagos";
     }
 
     @GetMapping("/pagos/aprobar/{id}")
-    public String aprobarPago(@PathVariable Long id,
-                               @RequestParam(required = false) String observacion) {
+    public String aprobarPago(@PathVariable Long id) {
         pagoRepo.findById(id).ifPresent(p -> {
             p.setEstado(PagoSaberPro.EstadoPago.APROBADO);
-            if (observacion != null) p.setObservacionCoordinador(observacion);
             pagoRepo.save(p);
         });
         return "redirect:/coordinador/pagos";
@@ -194,7 +207,6 @@ public class CoordinadorController {
     @GetMapping("/informe-general")
     public String informeGeneral(Model model) {
         model.addAttribute("estudiantes", estudianteRepo.findAll());
-        model.addAttribute("pageTitle", "Informe General");
         return "coordinator/informe-general";
     }
 
@@ -210,7 +222,6 @@ public class CoordinadorController {
     @GetMapping("/informe-detallado")
     public String informeDetallado(Model model) {
         model.addAttribute("resultados", resultadoRepo.findAll());
-        model.addAttribute("pageTitle", "Informe Detallado");
         return "coordinator/informe-detallado";
     }
 
@@ -226,7 +237,6 @@ public class CoordinadorController {
     @GetMapping("/beneficios")
     public String beneficios(Model model) {
         model.addAttribute("beneficiarios", resultadoRepo.findBeneficiarios());
-        model.addAttribute("pageTitle", "Informe de Beneficios");
         return "coordinator/beneficios";
     }
 
@@ -239,14 +249,13 @@ public class CoordinadorController {
                 .body(data);
     }
 
-    // ── Resolución de Beneficios ─────────────────────────────────
     @GetMapping("/resolucion-beneficios")
     public String resolucionBeneficios(Model model) {
-        model.addAttribute("superiores", resultadoRepo.findBeneficiarios().stream()
+        List<ResultadoSaberPro> beneficiarios = resultadoRepo.findBeneficiarios();
+        model.addAttribute("superiores", beneficiarios.stream()
                 .filter(r -> r.getNivelGlobal() == ResultadoSaberPro.NivelDesempeno.SUPERIOR).toList());
-        model.addAttribute("altos", resultadoRepo.findBeneficiarios().stream()
+        model.addAttribute("altos", beneficiarios.stream()
                 .filter(r -> r.getNivelGlobal() == ResultadoSaberPro.NivelDesempeno.ALTO).toList());
-        model.addAttribute("pageTitle", "Resolución de Beneficios");
         return "coordinator/resolucion-beneficios";
     }
 }
