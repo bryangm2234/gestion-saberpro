@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Informe Detallado</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css"/>
+<style>* {font-family:'Segoe UI',sans-serif;} body{background:#f0f4f8;} .topbar{background:#0d1f3c;color:#fff;padding:.85rem 1.75rem;}
+.card-p{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;}
+.table thead th{background:#0d1f3c;color:#fff;font-size:.75rem;}
+.table tbody td{font-size:.8rem;}
+.badge-sup{background:#dcfce7;color:#166534;border-radius:4px;padding:.15rem .45rem;font-size:.7rem;font-weight:700;}
+.badge-alto{background:#fef9c3;color:#854d0e;border-radius:4px;padding:.15rem .45rem;font-size:.7rem;font-weight:700;}
+.badge-otro{background:#f1f5f9;color:#475569;border-radius:4px;padding:.15rem .45rem;font-size:.7rem;font-weight:700;}
+.btn-export{background:#1a6b45;color:#fff;border:none;border-radius:8px;padding:.45rem 1rem;font-size:.82rem;}
+</style>
+</head>
+<body>
+<div class="topbar d-flex justify-content-between align-items-center">
+    <span class="fw-bold"><i class="bi bi-table me-2" style="color:#D4AF37;"></i>Informe Detallado de Resultados Saber Pro</span>
+    <div class="d-flex gap-2">
+        <a th:href="@{/coordinador/informe-detallado/excel}" class="btn-export"><i class="bi bi-file-excel me-1"></i>Exportar Excel</a>
+        <a th:href="@{/coordinador/dashboard}" class="btn btn-sm btn-outline-light">← Volver</a>
+    </div>
+</div>
+<div class="container-fluid p-4">
+    <div class="card-p">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 datatable" id="tablaDetallada">
+                <thead><tr>
+                    <th>Documento</th><th>Estudiante</th><th>Programa</th>
+                    <th>Puntaje Global</th><th>Nivel</th>
+                    <th>Com. Escrita</th><th>Raz. Cuant.</th><th>Lect. Crítica</th>
+                    <th>Comp. Ciudadanas</th><th>Inglés</th><th>Fecha</th><th>Beneficio</th>
+                </tr></thead>
+                <tbody>
+                    <tr th:each="r : ${resultados}">
+                        <td th:text="${r.estudiante.usuario.documento}"></td>
+                        <td th:text="${r.estudiante.usuario.nombreCompleto}"></td>
+                        <td th:text="${r.estudiante.programa?.nombre ?: '-'}"></td>
+                        <td><strong th:text="${r.puntajeGlobal}"></strong></td>
+                        <td>
+                            <span th:if="${r.nivelGlobal?.name() == 'SUPERIOR'}" class="badge-sup" th:text="${r.nivelGlobal}"></span>
+                            <span th:if="${r.nivelGlobal?.name() == 'ALTO'}" class="badge-alto" th:text="${r.nivelGlobal}"></span>
+                            <span th:unless="${r.nivelGlobal?.name() == 'SUPERIOR' or r.nivelGlobal?.name() == 'ALTO'}" class="badge-otro" th:text="${r.nivelGlobal}"></span>
+                        </td>
+                        <td th:text="${r.comunicacionEscrita}"></td>
+                        <td th:text="${r.razonamientoCuantitativo}"></td>
+                        <td th:text="${r.lecturaCritica}"></td>
+                        <td th:text="${r.competenciasCiudadanas}"></td>
+                        <td th:text="${r.ingles}"></td>
+                        <td th:text="${r.fechaExamen}"></td>
+                        <td style="max-width:180px;font-size:.72rem;" th:text="${r.descripcionBeneficio ?: 'Sin beneficio'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>$(document).ready(function(){ $('#tablaDetallada').DataTable({language:{url:'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json'},scrollX:true}); });</script>
+</body></html>

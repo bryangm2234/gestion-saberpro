@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cargue Pago Saber Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <style>
+        *{font-family:'Segoe UI',sans-serif;} body{background:#f0f4f8;}
+        .topbar{background:#0d1f3c;color:#fff;padding:.9rem 1.5rem;display:flex;justify-content:space-between;align-items:center;}
+        .card-p{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:1.5rem;margin-bottom:1.5rem;}
+        .form-label{font-size:.78rem;font-weight:600;color:#4a5568;}
+        .form-control{font-size:.82rem;border-color:#e2e8f0;background:#f7f9fc;}
+        .form-control:focus{border-color:#0d1f3c;box-shadow:0 0 0 3px rgba(13,31,60,.1);}
+        .btn-submit{background:#0d1f3c;color:#fff;border:none;border-radius:8px;padding:.6rem 1.5rem;font-weight:600;}
+        .btn-submit:hover{background:#1a2f5e;color:#fff;}
+        .badge-pend{background:#fef9c3;color:#854d0e;border-radius:5px;padding:.2rem .6rem;font-size:.72rem;font-weight:700;}
+        .badge-apro{background:#dcfce7;color:#166534;border-radius:5px;padding:.2rem .6rem;font-size:.72rem;font-weight:700;}
+        .badge-rech{background:#fee2e2;color:#991b1b;border-radius:5px;padding:.2rem .6rem;font-size:.72rem;font-weight:700;}
+        .table thead th{background:#0d1f3c;color:#fff;font-size:.78rem;}
+        .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:1rem;font-size:.82rem;color:#1e40af;}
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span class="fw-bold"><i class="bi bi-credit-card me-2" style="color:#D4AF37;"></i>Cargue de Pago Saber Pro</span>
+    <a th:href="@{/estudiante/dashboard}" class="btn btn-sm btn-outline-light">← Volver</a>
+</div>
+
+<div class="container py-4" style="max-width:700px;">
+
+    <div class="info-box mb-4">
+        <i class="bi bi-info-circle me-2"></i>
+        Registra el comprobante de pago de tu examen Saber Pro. El coordinador revisará y aprobará tu solicitud.
+    </div>
+
+    <!-- Formulario registrar pago -->
+    <div class="card-p">
+        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2" style="color:#0d1f3c;"></i>Registrar Nuevo Pago</h6>
+        <form th:action="@{/estudiante/pago/registrar}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Número de Recibo / Comprobante</label>
+                    <input type="text" name="numeroRecibo" class="form-control form-control-sm"
+                           placeholder="Ej: REC-2026-001234" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de Pago</label>
+                    <input type="date" name="fechaPago" class="form-control form-control-sm" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Valor Pagado (opcional)</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">$</span>
+                        <input type="number" name="valorPagado" class="form-control"
+                               placeholder="0.00" step="0.01" min="0"/>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Descripción / Observaciones</label>
+                    <textarea name="descripcion" class="form-control form-control-sm" rows="2"
+                              placeholder="Ej: Pago examen Saber Pro 2026-1..."></textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="bi bi-send me-2"></i>Enviar Comprobante
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Historial de pagos -->
+    <div class="card-p p-0" style="overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1a2f5e,#0d1f3c);color:#fff;padding:.9rem 1.5rem;display:flex;align-items:center;gap:.6rem;">
+            <i class="bi bi-clock-history" style="color:#D4AF37;"></i>
+            <h6 style="margin:0;font-weight:600;">Historial de mis Pagos</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr>
+                    <th>Nº Recibo</th><th>Fecha Pago</th><th>Valor</th><th>Estado</th><th>Observación Coord.</th>
+                </tr></thead>
+                <tbody>
+                    <tr th:each="p : ${pagos}">
+                        <td th:text="${p.numeroRecibo}"></td>
+                        <td th:text="${p.fechaPago}"></td>
+                        <td th:text="${p.valorPagado != null ? '$ ' + p.valorPagado : '-'}"></td>
+                        <td>
+                            <span th:if="${p.estado?.name() == 'PENDIENTE'}" class="badge-pend">EN REVISIÓN</span>
+                            <span th:if="${p.estado?.name() == 'APROBADO'}"  class="badge-apro">✓ APROBADO</span>
+                            <span th:if="${p.estado?.name() == 'RECHAZADO'}" class="badge-rech">✗ RECHAZADO</span>
+                        </td>
+                        <td th:text="${p.observacionCoordinador ?: '-'}" style="font-size:.78rem;"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pagos)}">
+                        <td colspan="5" class="text-center text-muted py-4">No has registrado pagos aún</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

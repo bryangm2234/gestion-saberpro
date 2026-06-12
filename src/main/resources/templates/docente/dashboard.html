@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Panel Docente – Saber Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        * { font-family:'Inter',sans-serif; }
+        :root { --navy:#0d1f3c; --navy2:#1a2f5e; --gold:#D4AF37; --bg:#f0f4f8; --teal:#0e7490; }
+        body { background:var(--bg); }
+        #sidebar { width:255px; min-height:100vh; background:var(--teal); position:fixed; top:0; left:0; z-index:1000; display:flex; flex-direction:column; }
+        .sidebar-brand { padding:1.5rem 1.25rem 1rem; border-bottom:1px solid rgba(255,255,255,.1); }
+        .badge-tag { font-size:.65rem; font-weight:700; letter-spacing:.08em; background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:4px; padding:.2rem .5rem; text-transform:uppercase; margin-bottom:.5rem; display:inline-block; }
+        .sidebar-brand h6 { color:#fff; font-weight:700; margin:0; font-size:.95rem; }
+        .sidebar-brand small { color:rgba(255,255,255,.5); font-size:.72rem; }
+        .nav-section { padding:.75rem 1rem .25rem; color:rgba(255,255,255,.4); font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; }
+        .nav-link { color:rgba(255,255,255,.75); padding:.55rem 1rem; border-radius:8px; margin:1px .5rem; font-size:.82rem; font-weight:500; display:flex; align-items:center; gap:.6rem; transition:all .15s; }
+        .nav-link:hover,.nav-link.active { background:rgba(255,255,255,.15); color:#fff; }
+        .sidebar-footer { margin-top:auto; padding:1rem; border-top:1px solid rgba(255,255,255,.08); }
+        #main { margin-left:255px; }
+        .topbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:.85rem 1.75rem; position:sticky; top:0; z-index:999; display:flex; justify-content:space-between; align-items:center; }
+        .topbar h6 { margin:0; font-weight:600; color:var(--navy); font-size:.9rem; }
+        .user-pill { background:var(--bg); border:1px solid #e2e8f0; border-radius:20px; padding:.35rem 1rem; font-size:.8rem; color:#4a5568; display:flex; align-items:center; gap:.5rem; }
+        .page-body { padding:1.75rem; }
+        .profile-card { background:linear-gradient(135deg,var(--teal),#0a5a70); border-radius:16px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; display:flex; align-items:center; gap:1.25rem; }
+        .profile-avatar { width:56px; height:56px; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:#fff; flex-shrink:0; }
+        .stat-card { border-radius:14px; border:none; padding:1.25rem 1.5rem; }
+        .stat-card.s1 { background:var(--teal); color:#fff; }
+        .stat-card.s2 { background:#1a6b45; color:#fff; }
+        .stat-card.s3 { background:#92400e; color:#fff; }
+        .stat-num { font-size:2rem; font-weight:700; }
+        .stat-lbl { font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; opacity:.7; }
+        .stat-icon { font-size:2rem; opacity:.25; }
+        .action-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; text-decoration:none; color:inherit; transition:all .2s; }
+        .action-card:hover { box-shadow:0 8px 24px rgba(0,0,0,.1); transform:translateY(-2px); color:inherit; }
+        .action-icon { width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+        .action-card h6 { margin:0; font-size:.85rem; font-weight:600; color:var(--navy); }
+        .section-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#8492a6; margin-bottom:.75rem; }
+    </style>
+</head>
+<body>
+<nav id="sidebar">
+    <div class="sidebar-brand">
+        <div class="badge-tag"><i class="bi bi-mortarboard-fill me-1"></i>UTS · Docente</div>
+        <h6>Sistema Saber Pro</h6>
+        <small>Panel Docente</small>
+    </div>
+    <div class="mt-2">
+        <div class="nav-section">Menú</div>
+        <a th:href="@{/docente/dashboard}" class="nav-link active"><i class="bi bi-grid-1x2"></i>Dashboard</a>
+        <a th:href="@{/docente/buscar}" class="nav-link"><i class="bi bi-search"></i>Buscar Alumnos</a>
+        <a th:href="@{/docente/estudiantes}" class="nav-link"><i class="bi bi-people"></i>Todos los Alumnos</a>
+        <a th:href="@{/docente/informe-general}" class="nav-link"><i class="bi bi-file-earmark-bar-graph"></i>Informe General</a>
+        <a th:href="@{/docente/beneficios}" class="nav-link"><i class="bi bi-trophy"></i>Informe Beneficios</a>
+    </div>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="nav-link" style="color:rgba(255,150,150,.8);margin:0;"><i class="bi bi-power"></i>Cerrar Sesión</a>
+    </div>
+</nav>
+
+<div id="main">
+    <div class="topbar">
+        <h6>Panel Docente</h6>
+        <div class="user-pill">
+            <i class="bi bi-person-circle text-secondary"></i>
+            <span th:text="${#authentication.name}">docente@uts.edu.co</span>
+        </div>
+    </div>
+    <div class="page-body">
+        <!-- Perfil -->
+        <div class="profile-card">
+            <div class="profile-avatar"><i class="bi bi-person-workspace"></i></div>
+            <div>
+                <h5 th:text="${docente?.usuario?.nombreCompleto} ?: 'Docente'" class="mb-0 fw-bold">Docente</h5>
+                <div style="opacity:.7;font-size:.82rem;margin-top:.25rem;">
+                    <i class="bi bi-building me-1"></i>
+                    <span th:text="${docente?.facultad?.nombre} ?: 'Sin facultad asignada'">Facultad</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="section-title">Estadísticas</div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card s1 d-flex justify-content-between align-items-center">
+                    <div><div class="stat-num" th:text="${totalEstudiantes}">34</div>
+                        <div class="stat-lbl">Total Alumnos</div></div>
+                    <i class="bi bi-people-fill stat-icon"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card s2 d-flex justify-content-between align-items-center">
+                    <div><div class="stat-num" th:text="${facultades?.size()} ?: '0'">2</div>
+                        <div class="stat-lbl">Facultades</div></div>
+                    <i class="bi bi-building stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="section-title">Opciones</div>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-3">
+                <a th:href="@{/docente/buscar}" class="action-card">
+                    <div class="action-icon" style="background:#e0f2fe;"><i class="bi bi-search" style="color:#0e7490;"></i></div>
+                    <div><h6>Buscar Alumnos</h6><small>Por cédula o facultad</small></div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a th:href="@{/docente/estudiantes}" class="action-card">
+                    <div class="action-icon" style="background:#eef2ff;"><i class="bi bi-people" style="color:#3730a3;"></i></div>
+                    <div><h6>Todos los Alumnos</h6><small>Lista completa</small></div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a th:href="@{/docente/informe-general}" class="action-card">
+                    <div class="action-icon" style="background:#f0fdf4;"><i class="bi bi-file-earmark-bar-graph" style="color:#166534;"></i></div>
+                    <div><h6>Informe General</h6><small>Resultados completos</small></div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a th:href="@{/docente/beneficios}" class="action-card">
+                    <div class="action-icon" style="background:#fdf4ff;"><i class="bi bi-trophy" style="color:#7e22ce;"></i></div>
+                    <div><h6>Beneficios</h6><small>Becas y exoneración</small></div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Buscar Alumnos</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>* {font-family:'Segoe UI',sans-serif;} body{background:#f0f4f8;}
+.topbar{background:#0e7490;color:#fff;padding:.85rem 1.75rem;}
+.card-p{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:1.5rem;}
+.btn-search{background:#0e7490;color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;}
+.btn-search:hover{background:#0a5a70;color:#fff;}
+.table thead th{background:#0d1f3c;color:#fff;font-size:.78rem;}
+.result-badge{background:#dcfce7;color:#166534;border-radius:5px;padding:.2rem .6rem;font-size:.75rem;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="topbar d-flex justify-content-between align-items-center">
+    <span class="fw-bold"><i class="bi bi-search me-2"></i>Buscar Alumnos</span>
+    <a th:href="@{/docente/dashboard}" class="btn btn-sm btn-outline-light">← Volver</a>
+</div>
+<div class="container-fluid p-4">
+    <div class="row g-4">
+        <!-- Buscar por cédula -->
+        <div class="col-md-6">
+            <div class="card-p">
+                <h6 class="fw-bold mb-3"><i class="bi bi-person-badge me-2" style="color:#0e7490;"></i>Buscar por Cédula</h6>
+                <form th:action="@{/docente/buscar}" method="get">
+                    <div class="input-group">
+                        <input type="text" name="cedula" class="form-control" placeholder="Número de documento"
+                               th:value="${cedula}"/>
+                        <button type="submit" class="btn-search px-3"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+                <div th:if="${estudiante}" class="mt-3 p-3 rounded" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                    <div class="fw-bold" th:text="${estudiante.usuario.nombreCompleto}"></div>
+                    <div class="small text-muted" th:text="${estudiante.usuario.documento}"></div>
+                    <div class="small" th:text="${estudiante.programa?.nombre}"></div>
+                    <div class="mt-2" th:if="${not #lists.isEmpty(estudiante.resultados)}">
+                        <span class="result-badge">Último puntaje:
+                            <strong th:text="${estudiante.resultados[0].puntajeGlobal}"></strong>
+                        </span>
+                    </div>
+                </div>
+                <div th:if="${cedula != null and estudiante == null}" class="mt-3 text-muted small">
+                    <i class="bi bi-exclamation-circle me-1"></i>No se encontró estudiante con ese documento.
+                </div>
+            </div>
+        </div>
+        <!-- Buscar por facultad -->
+        <div class="col-md-6">
+            <div class="card-p">
+                <h6 class="fw-bold mb-3"><i class="bi bi-building me-2" style="color:#0e7490;"></i>Buscar por Facultad</h6>
+                <form th:action="@{/docente/buscar}" method="get">
+                    <div class="input-group">
+                        <select name="facultadId" class="form-select">
+                            <option value="">Selecciona una facultad</option>
+                            <option th:each="f : ${facultades}" th:value="${f.id}" th:text="${f.nombre}"
+                                    th:selected="${f.id == facultadSeleccionada}"></option>
+                        </select>
+                        <button type="submit" class="btn-search px-3"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+                <div th:if="${estudiantesFacultad}" class="mt-3">
+                    <div class="small fw-semibold mb-2" th:text="'Encontrados: ' + ${estudiantesFacultad.size()} + ' alumnos'"></div>
+                    <div class="table-responsive" style="max-height:300px;overflow-y:auto;">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead><tr><th>Nombre</th><th>Programa</th><th>Puntaje</th></tr></thead>
+                            <tbody>
+                                <tr th:each="e : ${estudiantesFacultad}">
+                                    <td th:text="${e.usuario.nombreCompleto}" style="font-size:.8rem;"></td>
+                                    <td th:text="${e.programa?.nombre}" style="font-size:.8rem;"></td>
+                                    <td style="font-size:.8rem;">
+                                        <span th:if="${not #lists.isEmpty(e.resultados)}"
+                                              th:text="${e.resultados[0].puntajeGlobal}"></span>
+                                        <span th:unless="${not #lists.isEmpty(e.resultados)}" class="text-muted">-</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

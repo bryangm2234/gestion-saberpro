@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Resolución de Beneficios</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <style>
+        *{font-family:'Segoe UI',sans-serif;} body{background:#f0f4f8;}
+        .topbar{background:#0d1f3c;color:#fff;padding:.85rem 1.75rem;display:flex;justify-content:space-between;align-items:center;}
+        .resolucion-header{background:linear-gradient(135deg,#1a6b45,#0f4028);border-radius:16px;padding:2rem;color:#fff;text-align:center;margin-bottom:2rem;}
+        .resolucion-header h3{font-weight:800;margin-bottom:.5rem;}
+        .card-nivel{background:#fff;border-radius:14px;border:none;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow:hidden;margin-bottom:1.5rem;}
+        .card-nivel .nivel-header{padding:1rem 1.5rem;display:flex;align-items:center;gap:.6rem;}
+        .nivel-header.superior{background:linear-gradient(135deg,#1a6b45,#0f4028);color:#fff;}
+        .nivel-header.alto{background:linear-gradient(135deg,#92400e,#78350f);color:#fff;}
+        .nivel-header h6{margin:0;font-weight:700;}
+        .beneficio-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin:.75rem;}
+        .beneficio-box.alto{background:#fefce8;border-color:#fde68a;}
+        .table thead th{background:#0d1f3c;color:#fff;font-size:.78rem;}
+        .table tbody td{font-size:.82rem;vertical-align:middle;}
+        .print-btn{background:#1a2f5e;color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;}
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span class="fw-bold"><i class="bi bi-award me-2" style="color:#D4AF37;"></i>Resolución de Beneficios – Tecnología e Ingeniería</span>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-sm btn-outline-light"><i class="bi bi-printer me-1"></i>Imprimir</button>
+        <a th:href="@{/coordinador/dashboard}" class="btn btn-sm btn-outline-light">← Volver</a>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Encabezado resolución -->
+    <div class="resolucion-header">
+        <i class="bi bi-trophy-fill" style="font-size:2.5rem;opacity:.8;"></i>
+        <h3 class="mt-2">RESOLUCIÓN DE BENEFICIOS ACADÉMICOS</h3>
+        <p style="opacity:.8;margin:0;">Saber Pro 2026 · Unidades Tecnológicas de Santander</p>
+        <p style="opacity:.6;font-size:.82rem;margin-top:.5rem;">
+            Programas de Tecnología e Ingeniería · Generado el
+            <span th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy')}"></span>
+        </p>
+    </div>
+
+    <!-- NIVEL SUPERIOR -->
+    <div class="card-nivel" th:if="${not #lists.isEmpty(superiores)}">
+        <div class="nivel-header superior">
+            <i class="bi bi-trophy-fill" style="font-size:1.2rem;color:#D4AF37;"></i>
+            <h6>NIVEL SUPERIOR — Puntaje mayor a 241</h6>
+        </div>
+        <div class="beneficio-box m-3">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#1a6b45;font-size:1.1rem;">5.0 / 5.0</div>
+                    <div class="small text-muted">Nota Trabajo de Grado</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#1a6b45;font-size:1.1rem;">100%</div>
+                    <div class="small text-muted">Beca Derechos de Grado</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#1a6b45;font-size:1.1rem;">1 Año</div>
+                    <div class="small text-muted">Vigencia del Beneficio</div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive px-3 pb-3">
+            <table class="table table-sm table-hover mb-0">
+                <thead><tr><th>#</th><th>Documento</th><th>Nombre</th><th>Programa</th><th>Puntaje</th><th>Vigencia</th></tr></thead>
+                <tbody>
+                    <tr th:each="r, i : ${superiores}">
+                        <td th:text="${i.count}"></td>
+                        <td th:text="${r.estudiante.usuario.documento}"></td>
+                        <td th:text="${r.estudiante.usuario.nombreCompleto}"></td>
+                        <td th:text="${r.estudiante.programa?.nombre}"></td>
+                        <td><strong th:text="${r.puntajeGlobal}"></strong></td>
+                        <td th:text="${r.vigenciaIncentivo}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- NIVEL ALTO -->
+    <div class="card-nivel" th:if="${not #lists.isEmpty(altos)}">
+        <div class="nivel-header alto">
+            <i class="bi bi-star-fill" style="font-size:1.2rem;color:#fef9c3;"></i>
+            <h6>NIVEL ALTO — Puntaje entre 201 y 241</h6>
+        </div>
+        <div class="beneficio-box alto m-3">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#92400e;font-size:1.1rem;">4.5 / 5.0</div>
+                    <div class="small text-muted">Nota Trabajo de Grado</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#92400e;font-size:1.1rem;">50%</div>
+                    <div class="small text-muted">Beca Derechos de Grado</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="fw-bold" style="color:#92400e;font-size:1.1rem;">6 Meses</div>
+                    <div class="small text-muted">Vigencia del Beneficio</div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive px-3 pb-3">
+            <table class="table table-sm table-hover mb-0">
+                <thead><tr><th>#</th><th>Documento</th><th>Nombre</th><th>Programa</th><th>Puntaje</th><th>Vigencia</th></tr></thead>
+                <tbody>
+                    <tr th:each="r, i : ${altos}">
+                        <td th:text="${i.count}"></td>
+                        <td th:text="${r.estudiante.usuario.documento}"></td>
+                        <td th:text="${r.estudiante.usuario.nombreCompleto}"></td>
+                        <td th:text="${r.estudiante.programa?.nombre}"></td>
+                        <td><strong th:text="${r.puntajeGlobal}"></strong></td>
+                        <td th:text="${r.vigenciaIncentivo}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(superiores) and #lists.isEmpty(altos)}"
+         class="text-center py-5 text-muted">
+        <i class="bi bi-hourglass-split" style="font-size:3rem;"></i>
+        <h5 class="mt-3">No hay estudiantes con beneficios activos</h5>
+        <p>Los beneficios se asignan cuando un estudiante obtiene puntaje global mayor a 201.</p>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
