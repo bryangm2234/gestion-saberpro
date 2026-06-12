@@ -11,14 +11,19 @@ import java.util.Optional;
 @Repository
 public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
 
+    @EntityGraph(attributePaths = {"usuario", "programa", "programa.facultad", "resultados"})
+    List<Estudiante> findAll();
+
+    @EntityGraph(attributePaths = {"usuario", "programa", "programa.facultad", "resultados"})
     Optional<Estudiante> findByUsuarioCorreo(String correo);
+
+    @EntityGraph(attributePaths = {"usuario", "programa", "programa.facultad", "resultados"})
     Optional<Estudiante> findByUsuarioDocumento(String documento);
 
+    @EntityGraph(attributePaths = {"usuario", "programa", "programa.facultad", "resultados"})
     List<Estudiante> findByProgramaId(Long programaId);
 
-    @Query("SELECT e FROM Estudiante e " +
-           "WHERE e.programa.id = :progId " +
-           "ORDER BY e.usuario.primerApellido")
+    @Query("SELECT e FROM Estudiante e WHERE e.programa.id = :progId ORDER BY e.usuario.primerApellido")
     List<Estudiante> findByProgramaIdOrdenado(@Param("progId") Long progId);
 
     long countByProgramaId(Long programaId);
