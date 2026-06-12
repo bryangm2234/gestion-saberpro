@@ -6,11 +6,10 @@ import jakarta.persistence.*;
 @Table(name = "coordinadores")
 public class Coordinador {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
@@ -21,7 +20,6 @@ public class Coordinador {
     private Boolean activo = true;
 
     public Coordinador() {}
-
     public Coordinador(Usuario usuario, String areaAsignada) {
         this.usuario = usuario;
         this.areaAsignada = areaAsignada;
